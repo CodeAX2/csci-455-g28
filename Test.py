@@ -1,12 +1,12 @@
-from cgitb import reset
 from RobotDialog import *
+
+parser = DialogParser("test.txt")
+parser.parseFile()
 
 defMap = {
     "test": "This is a string",
     "listTest": ["Good", "Bad", "Fantastic"]
 }
-
-varMap = {}
 
 
 baseBranches = []
@@ -24,7 +24,7 @@ d2.addChildBranch(d4)
 baseBranches.append(d1)
 baseBranches.append(d2)
 
-tree = Dialog(defMap, varMap, baseBranches)
+tree = Dialog(defMap, baseBranches)
 
 
 while True:

@@ -2,15 +2,23 @@ import random
 import re
 
 # Represents a dialog tree
+
+
 class Dialog:
     # Creates a new dialog tree
     # defMap is a mapping from string to string/list to provide values for definitions
     # startingBranches is a list of DialogBranch that defines the starting dialog options
-    def __init__(self, defMap, startingBranches):
+    def __init__(self):
         self.__varMap = {}
+        self.__defMap = {}
+        self.__curBranches: list[DialogBranch] = []
+        self.__baseBranches: list[DialogBranch] = []
+
+    def setStartingBranches(self, startingBranches):
+        self.__baseBranches = startingBranches
+
+    def setDefMap(self, defMap):
         self.__defMap = defMap
-        self.__curBranches: list[DialogBranch] = startingBranches
-        self.__baseBranches: list[DialogBranch] = startingBranches
 
     # Set the current branches to check user input against
     # branches is a list of DialogBranch
@@ -108,14 +116,49 @@ class DialogParser:
     # Creates a new DialogParser that will parse the file at the given inputFilePath
     def __init__(self, inputFilePath):
         file = open(inputFilePath)
-        self.__tokenizer = DialogTokenizer(file.read())
-        print(repr(self.__tokenizer.getAllTokens()))
+        self.__tokenizer: DialogTokenizer = DialogTokenizer(file.read())
 
     # Parses the dialog file and returns a new dialog tree object
     def parseFile(self):
         # TODO: Implement the actual parsing and creation of the dialog tree and branches
+        self.__tree = Dialog()
+
+        self._parseSegList()
+
+        return self.__tree
+
+    def getTree(self):
+        return self.__tree
+
+    def __parseSegList(self):
+        self.__parseSegment()
+
+        if (self.__tokenizer.peekNextToken() == "\n"):
+            self.__tokenizer.getNextToken()
+            if (self.__tokenizer.hasNextToken()):
+                self.__parseSegList()
+
+    def __parseSegment(self):
+        peekedToken = self.__tokenizer.peekNextToken()
+        # Comment
+        if (peekedToken[0] == "#"):
+            # Skip token
+            self.__tokenizer.getNextToken()
+            return
+        # Definition
+        if (peekedToken[0] == "~"):
+            self.__parseDefinition()
+            return
+        # USegment
+        if (peekedToken[0] == "u"):
+            self.__parseUSegment()
+            return
+
+    def __parseDefinition():
         pass
 
+    def __parseUSegment():
+        pass
 
 # Represents the tokenizer for a dialog file
 class DialogTokenizer:
@@ -154,3 +197,7 @@ class DialogTokenizer:
     # Returns the list of all tokens
     def getAllTokens(self):
         return self.__tokens
+
+    # Returns if there is a next token
+    def hasNextToken(self):
+        return self.__curToken != len(self.__tokens) - 1
