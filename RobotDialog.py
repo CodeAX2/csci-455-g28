@@ -1,9 +1,10 @@
 import random
 import re
 
+# This file got very long and scuffed, but it works
+# Sorry guys....
+
 # Represents a dialog tree
-
-
 class Dialog:
     # Creates a new dialog tree
     # defMap is a mapping from string to string/list to provide values for definitions
@@ -87,7 +88,10 @@ class DialogBranch:
             else:
                 curWord = self.__output[i]
 
-            formattedOutput += curWord + " "
+            if (type(curWord) is list):
+                formattedOutput += random.choice(curWord)
+            else:
+                formattedOutput += curWord + " "
 
         # Update variables with their new values
         for updateVarTuple in self.updateVarArray:
@@ -120,7 +124,6 @@ class DialogParser:
 
     # Parses the dialog file and returns a new dialog tree object
     def parseFile(self):
-        # TODO: Implement the actual parsing and creation of the dialog tree and branches
         self.__tree = Dialog()
 
         segments = self.__parseSegList()
@@ -140,11 +143,22 @@ class DialogParser:
 
         return self.__tree
 
+    # Get the dialog tree that was parsed
     def getTree(self):
         return self.__tree
 
     def __parseSegList(self):
         firstItem = self.__parseSegment()
+
+        # Scrub forward until next \n token
+        # Helps with skipping lines that were incorrect
+        skipped = ""
+        while(self.__tokenizer.hasNextToken() and self.__tokenizer.peekNextToken() != "\n"):
+            skipped += self.__tokenizer.getNextToken() + " "
+
+        # We skipped some important code due to a syntax error
+        if (skipped != "" and skipped[0] != "#"):
+            print("Skipped:", repr(skipped))
 
         if (self.__tokenizer.peekNextToken() == "\n"):
             self.__tokenizer.getNextToken()
@@ -159,6 +173,8 @@ class DialogParser:
     # Returns None if comment, the definition tuple if definition, or the DialogBranch if USegment
     def __parseSegment(self):
         peekedToken = self.__tokenizer.peekNextToken()
+        if (peekedToken == None):
+            return None
         # Comment
         if (peekedToken[0] == "#"):
             # Skip token
@@ -169,12 +185,15 @@ class DialogParser:
             return self.__parseDefinition()
         # USegment
         if (peekedToken[0] == "u"):
-            return self.__parseUSegment()
+            return self.__parseUSegmentList()
+
+        return None
 
     # Parses a definition, returns a tuple of (name,value) or None if syntax was invalid
     def __parseDefinition(self):
         defName = self.__tokenizer.getNextToken()[1:]
         if (self.__tokenizer.getNextToken() != ":"):
+            self.__printError(":")
             return None
         defValue = self.__parseDefValue()
         if (defValue == None):
@@ -187,7 +206,8 @@ class DialogParser:
         if (self.__tokenizer.peekNextToken() == "["):
             self.__tokenizer.getNextToken()
             result = self.__parseList()
-            if(self.__tokenizer.getNextToken() != "]"):
+            if (self.__tokenizer.getNextToken() != "]"):
+                self.__printError("]")
                 return None
         else:
             result = self.__parseValue()
@@ -215,12 +235,18 @@ class DialogParser:
 
     # TODO: Finish USegment
     # Parses a USegment and returns the created DialogBranch
-    def __parseUSegment(self):
-        if (self.__tokenizer.getNextToken() != "u"):
+    def __parseUSegmentList(self, x=None):
+        if (x == None and self.__tokenizer.getNextToken() != "u"):
+            self.__printError("u")
+            return None
+        if (x != None and self.__tokenizer.getNextToken() != "u" + str(x)):
+            self.__printError("u" + str(x))
             return None
         if (self.__tokenizer.getNextToken() != ":"):
+            self.__printError(":")
             return None
         if (self.__tokenizer.getNextToken() != "("):
+            self.__printError("(")
             return None
 
         splitInput = self.__parseInput()
@@ -228,17 +254,21 @@ class DialogParser:
             return None
 
         if (self.__tokenizer.getNextToken() != ")"):
+            self.__printError(")")
             return None
         if (self.__tokenizer.getNextToken() != ":"):
+            self.__printError(":")
             return None
 
         splitResponse = self.__parseResponse()
         if (splitResponse == None):
             return None
 
-        assignments = self.__parseAssignments()
-        if (assignments == None):
-            return None
+        assignments = []
+        if (re.match(r"\$[a-zA-Z0-9]+=\$[a-zA-Z0-9]+", self.__tokenizer.peekNextToken())):
+            assignments = self.__parseAssignments()
+            if (assignments == None):
+                return None
 
         # Format the input arguments
         curVariablePos = 0
@@ -253,29 +283,47 @@ class DialogParser:
                             varsToSkip -= 1
                             splitInput[i] = splitResponse[j]
                             break
+                        varsToSkip -= 1
 
                 # Did not find variable, keep looking in the assignments
                 if (varsToSkip >= 0):
                     for assignTuple in assignments:
                         if (varsToSkip == 0):
                             varsToSkip -= 1
-                            splitInput[i] = assignTuple[1]
+                            splitInput[i] = "$" + assignTuple[1]
                             break
-                
+                        varsToSkip -= 1
+
                 # Unmatched variable
                 if (splitInput[i] == "_"):
+                    print(
+                        "Unmatched input with no variable name in response or assignments")
                     return None
                 curVariablePos += 1
 
         curBranch = DialogBranch(splitInput, splitResponse, assignments)
 
-        if (self.__tokenizer.peekNextToken() == "\n" and self.__tokenizer.peekAhead(2)[0:2] == "u1"):
-            self.__tokenizer.getNextToken()
-            childrenBranches = self.__parseUxSegmentList(1)
-            for childBranch in childrenBranches:
-                curBranch.addChildBranch(childBranch)
+        newX = 1
+        if (x != None):
+            newX = x + 1
 
-        return curBranch
+        if (self.__tokenizer.peekNextToken() == "\n" and self.__tokenizer.peekAhead(2) == "u" + str(newX)):
+            self.__tokenizer.getNextToken()
+            childrenBranches = self.__parseUSegmentList(x=newX)
+            if (childrenBranches != None):
+                for childBranch in childrenBranches:
+                    curBranch.addChildBranch(childBranch)
+
+        if (x != None and self.__tokenizer.peekNextToken() == "\n" and self.__tokenizer.peekAhead(2) == "u" + str(x)):
+            self.__tokenizer.getNextToken()
+            siblingBranches = self.__parseUSegmentList(x=x)
+            siblingBranches.insert(0, curBranch)
+            return siblingBranches
+
+        if (x == None):
+            return curBranch
+
+        return [curBranch]
 
     # Parses the input for a USegment
     # Returns a split list of words/underscores for writing to variables
@@ -297,7 +345,8 @@ class DialogParser:
         if (self.__tokenizer.peekNextToken() == "["):
             self.__tokenizer.getNextToken()
             curVal = self.__parseList()
-            if (self.__tokenizer.peekNextToken() != "["):
+            if (self.__tokenizer.peekNextToken() != "]"):
+                self.__printError("]")
                 return None
             self.__tokenizer.getNextToken()
 
@@ -305,42 +354,34 @@ class DialogParser:
             curVal = self.__tokenizer.getNextToken()
 
         nextToken = self.__tokenizer.peekNextToken()
-        if (re.match(r"[~$][a-zA-Z0-9]+|[a-zA-Z0-9]+|\[", nextToken)):
-            # TODO: Rest of response
-            pass
+        if (re.fullmatch(r"[~$][a-zA-Z0-9]+|[a-zA-Z0-9]+|\[", nextToken)):
+            restResponses = self.__parseResponse()
+            restResponses.insert(0, curVal)
+            return restResponses
 
-
-        return curVal
+        return [curVal]
 
     # Returns a list of tuples denoting what variable should be updated by another variable
     def __parseAssignments(self):
-        varA = self.__tokenizer.getNextToken()
-        if (varA[0] != "$"):
-            return None
-        
-        if (self.__tokenizer.getNextToken() != "="):
-            return None
 
-        varB = self.__tokenizer.getNextToken()
-        if (varB[0] != "$"):
-            return None
+        assignment = self.__tokenizer.getNextToken()
+        varArray = assignment.split("=")
 
-        varTuple = (varA[1:], varB[1:])
+        varTuple = (varArray[0][1:], varArray[1][1:])
 
-        if (self.__tokenizer.peekNextToken()[0] == "$" and self.__tokenizer.peekAhead(2) == "=" and self.__tokenizer.peekAhead(3)[0] == "$"):
+        if (re.match(r"\$[a-zA-Z0-9]+=\$[a-zA-Z0-9]+", self.__tokenizer.peekNextToken())):
             restTuples = self.__parseAssignments()
             restTuples.insert(0, varTuple)
             return restTuples
 
         return [varTuple]
 
-    # TODO: Implement UxSegmentList parsing
-    def __parseUxSegmentList(self, x):
-        pass
+    def __printError(self, expected):
+        print("Invalid Syntax\n\tNear " +
+              repr(self.__tokenizer.getCurToken()), "\n\tExpected: " + repr(expected))
+
 
 # Represents the tokenizer for a dialog file
-
-
 class DialogTokenizer:
     # Tokenizes a given string into tokens matching the format of a dialog file
     def __init__(self, asString):
@@ -350,12 +391,24 @@ class DialogTokenizer:
     # Actually tokenize the string
     def __tokenize(self):
         # This scuffed regex targets keywords, keeps strings together, etc.
-        self.__tokens = re.findall(
-            r"#.+|~\w+|:|\[|\]|\".+\"|_|\(|\)|\$\w+=\$\w+|\$\w+|\w+|\n", self.__asString)
+        tokens = re.findall(
+            r"#.+|~\w+|:|\[|\]|\"[^\"]+\"|_|\(|\)|\$\w+=\$\w+|\$\w+|\w+|\n", self.__asString)
+
+        # Remove comments and excess newlines
+        for i in range(len(tokens) - 1, -1, -1):
+            if (tokens[i][0] == "#"):
+                tokens.pop(i)
+            elif (tokens[i] == '\n'):
+                if (i + 1 < len(tokens)):
+                    if (tokens[i + 1] == '\n'):
+                        tokens.pop(i)
+
+        self.__tokens = tokens
         self.__curToken = -1
 
     # Returns the next token in the list and increments the pointer
-    def getNextToken(self):
+    # This does not consider comments
+    def getNextToken(self,):
         self.__curToken += 1
         if (len(self.__tokens) == self.__curToken):
             return None
@@ -382,10 +435,17 @@ class DialogTokenizer:
         else:
             return self.__tokens[pos]
 
-    # Returns the list of all tokens
+    # Moves the current position to the next newline character
+    def nextLine(self):
+        pos = self.__curToken + 1
+        while (self.__tokens[pos] != "\n"):
+            pos += 1
+        self.__curToken = pos
+
+    # Returns the list of all tokens, including comments
     def getAllTokens(self):
         return self.__tokens
 
     # Returns if there is a next token
     def hasNextToken(self):
-        return self.__curToken != len(self.__tokens) - 1
+        return self.peekNextToken() != None

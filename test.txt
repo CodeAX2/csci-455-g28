@@ -1,9 +1,36 @@
+# Example of definition with an array
 ~mood:[good great "absolutely amazing"]
-~test:"This is a string"
-u:(my name is _):hello $1=$name
-    u1:(how are you):i am doing ~mood
-    u1:(what are you): i am an ai can't you tell $name
-        u2 : (are you evil) : not that i am aware of
-u :( say test) :  ~test
+
+# Example of a string
+~string:"This is a string"
+
+# Example of a multiline string
+~multiline : "This is a
+multiline string"
+
+# Example of taking user input
+u:(my name is _): hello $name
+
+    # Example of loading from definition array
+    u1:(how are you): i am doing ~mood
+
+    # Example of loading from variable
+    u1:(what are you): i am an ai cant you tell $name
+
+        # Example of weird formatting
+        u2 :    (are you evil ):      not that i am aware of # Comment at the end of this line
+
+# Example of loading a definition with weird formatting
+u :( say test) :  ~string
+
+# Example of inline array
+u:(say random thing): i am ["a good robot" "an evil ai" "NOT A MORON"]
+
+# Example of loading multiline definition
+u:(say multiline):~multiline
+
+# Example of multiple inputs
+u:(my full name is _ _): hello $1 $2 $lastName=$2 $firstName=$1
+    u1:(what was my name again): your last name is $lastName and your first name is $firstName
 
 #This is a comment
