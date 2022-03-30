@@ -44,10 +44,10 @@ class DialogBranch:
     # expectedInput is an array of strings and variable names of the format $varName
     # output is the format of the output, using variable and definition names $varName ~defName
     # updateVarMap is a map of variables names to be updated by their keys
-    def __init__(self, expectedInput, output, updateVarMap):
+    def __init__(self, expectedInput, output, updateVarArray):
         self.__expectedInput = expectedInput
         self.__output = output
-        self.__updateVarMap = updateVarMap
+        self.updateVarArray = updateVarArray
         self.__childrenBranches = []
 
     def addChildBranch(self, branch):
@@ -90,8 +90,8 @@ class DialogBranch:
             formattedOutput += curWord + " "
 
         # Update variables with their new values
-        for updateVarKey in self.__updateVarMap:
-            varMap[updateVarKey] = varMap[self.__updateVarMap[updateVarKey]]
+        for updateVarTuple in self.updateVarArray:
+            varMap[updateVarTuple[0]] = varMap[updateVarTuple[1]]
 
         # Update the branch of the tree
         if (len(self.__childrenBranches) != 0):
@@ -232,7 +232,110 @@ class DialogParser:
         if (self.__tokenizer.getNextToken() != ":"):
             return None
 
+        splitResponse = self.__parseResponse()
+        if (splitResponse == None):
+            return None
+
+        assignments = self.__parseAssignments()
+        if (assignments == None):
+            return None
+
+        # Format the input arguments
+        curVariablePos = 0
+        for i in range(len(splitInput)):
+            if (splitInput[i] == "_"):
+                varsToSkip = curVariablePos
+
+                # Look for the variable in the responses
+                for j in range(len(splitResponse)):
+                    if (splitResponse[j][0] == "$"):
+                        if (varsToSkip == 0):
+                            varsToSkip -= 1
+                            splitInput[i] = splitResponse[j]
+                            break
+
+                # Did not find variable, keep looking in the assignments
+                if (varsToSkip >= 0):
+                    for assignTuple in assignments:
+                        if (varsToSkip == 0):
+                            varsToSkip -= 1
+                            splitInput[i] = assignTuple[1]
+                            break
+                
+                # Unmatched variable
+                if (splitInput[i] == "_"):
+                    return None
+                curVariablePos += 1
+
+        curBranch = DialogBranch(splitInput, splitResponse, assignments)
+
+        if (self.__tokenizer.peekNextToken() == "\n" and self.__tokenizer.peekAhead(2)[0:2] == "u1"):
+            self.__tokenizer.getNextToken()
+            childrenBranches = self.__parseUxSegmentList(1)
+            for childBranch in childrenBranches:
+                curBranch.addChildBranch(childBranch)
+
+        return curBranch
+
+    # Parses the input for a USegment
+    # Returns a split list of words/underscores for writing to variables
     def __parseInput(self):
+
+        curInput = self.__tokenizer.getNextToken()
+        if (re.match(r"[a-zA-Z0-9_]+", self.__tokenizer.peekNextToken())):
+            restInput = self.__parseInput()
+            restInput.insert(0, curInput)
+            return restInput
+
+        return [curInput]
+
+    # Parses the response for a USegment
+    # Returns a split list of words, ~definitions, $varibales, arrays
+    def __parseResponse(self):
+        curVal = None
+
+        if (self.__tokenizer.peekNextToken() == "["):
+            self.__tokenizer.getNextToken()
+            curVal = self.__parseList()
+            if (self.__tokenizer.peekNextToken() != "["):
+                return None
+            self.__tokenizer.getNextToken()
+
+        else:
+            curVal = self.__tokenizer.getNextToken()
+
+        nextToken = self.__tokenizer.peekNextToken()
+        if (re.match(r"[~$][a-zA-Z0-9]+|[a-zA-Z0-9]+|\[", nextToken)):
+            # TODO: Rest of response
+            pass
+
+
+        return curVal
+
+    # Returns a list of tuples denoting what variable should be updated by another variable
+    def __parseAssignments(self):
+        varA = self.__tokenizer.getNextToken()
+        if (varA[0] != "$"):
+            return None
+        
+        if (self.__tokenizer.getNextToken() != "="):
+            return None
+
+        varB = self.__tokenizer.getNextToken()
+        if (varB[0] != "$"):
+            return None
+
+        varTuple = (varA[1:], varB[1:])
+
+        if (self.__tokenizer.peekNextToken()[0] == "$" and self.__tokenizer.peekAhead(2) == "=" and self.__tokenizer.peekAhead(3)[0] == "$"):
+            restTuples = self.__parseAssignments()
+            restTuples.insert(0, varTuple)
+            return restTuples
+
+        return [varTuple]
+
+    # TODO: Implement UxSegmentList parsing
+    def __parseUxSegmentList(self, x):
         pass
 
 # Represents the tokenizer for a dialog file
