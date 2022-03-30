@@ -123,7 +123,20 @@ class DialogParser:
         # TODO: Implement the actual parsing and creation of the dialog tree and branches
         self.__tree = Dialog()
 
-        self._parseSegList()
+        segments = self.__parseSegList()
+
+        defMap = {}
+        startingBranches = []
+
+        for segment in segments:
+            if (type(segment) is tuple):
+                defMap[segment[0]] = segment[1]
+            elif (segment != None):
+                startingBranches.append(segment)
+
+        self.__tree.setDefMap(defMap)
+        self.__tree.setStartingBranches(startingBranches)
+        self.__tree.reset()
 
         return self.__tree
 
@@ -131,36 +144,100 @@ class DialogParser:
         return self.__tree
 
     def __parseSegList(self):
-        self.__parseSegment()
+        firstItem = self.__parseSegment()
 
         if (self.__tokenizer.peekNextToken() == "\n"):
             self.__tokenizer.getNextToken()
             if (self.__tokenizer.hasNextToken()):
-                self.__parseSegList()
+                restItems = self.__parseSegList()
+                restItems.insert(0, firstItem)
+                return restItems
 
+        return [firstItem]
+
+    # Parses a segment, which is either a comment, definition, or USegment
+    # Returns None if comment, the definition tuple if definition, or the DialogBranch if USegment
     def __parseSegment(self):
         peekedToken = self.__tokenizer.peekNextToken()
         # Comment
         if (peekedToken[0] == "#"):
             # Skip token
             self.__tokenizer.getNextToken()
-            return
+            return None
         # Definition
         if (peekedToken[0] == "~"):
-            self.__parseDefinition()
-            return
+            return self.__parseDefinition()
         # USegment
         if (peekedToken[0] == "u"):
-            self.__parseUSegment()
-            return
+            return self.__parseUSegment()
 
-    def __parseDefinition():
-        pass
+    # Parses a definition, returns a tuple of (name,value) or None if syntax was invalid
+    def __parseDefinition(self):
+        defName = self.__tokenizer.getNextToken()[1:]
+        if (self.__tokenizer.getNextToken() != ":"):
+            return None
+        defValue = self.__parseDefValue()
+        if (defValue == None):
+            return None
+        return (defName, defValue)
 
-    def __parseUSegment():
+    # Parses a value of a definition and returns either a single value or an array of values
+    def __parseDefValue(self):
+        result = None
+        if (self.__tokenizer.peekNextToken() == "["):
+            self.__tokenizer.getNextToken()
+            result = self.__parseList()
+            if(self.__tokenizer.getNextToken() != "]"):
+                return None
+        else:
+            result = self.__parseValue()
+
+        return result
+
+    # Parses a list of values and returns an array of the values
+    def __parseList(self):
+        firstValue = self.__parseValue()
+
+        nextToken = self.__tokenizer.peekNextToken()
+        # Check if next token is a value
+        if ((nextToken[0] == "\"" and nextToken[-1] == "\"") or re.match(r"[a-zA-Z0-9_]+", nextToken)):
+            restValues = self.__parseList()
+            restValues.insert(0, firstValue)
+            return restValues
+        return [firstValue]
+
+    # Parses a value and returns it
+    def __parseValue(self):
+        value = self.__tokenizer.getNextToken()
+        if (value[0] == "\"" and value[-1] == "\""):
+            value = value[1:-1]
+        return value
+
+    # TODO: Finish USegment
+    # Parses a USegment and returns the created DialogBranch
+    def __parseUSegment(self):
+        if (self.__tokenizer.getNextToken() != "u"):
+            return None
+        if (self.__tokenizer.getNextToken() != ":"):
+            return None
+        if (self.__tokenizer.getNextToken() != "("):
+            return None
+
+        splitInput = self.__parseInput()
+        if (splitInput == None):
+            return None
+
+        if (self.__tokenizer.getNextToken() != ")"):
+            return None
+        if (self.__tokenizer.getNextToken() != ":"):
+            return None
+
+    def __parseInput(self):
         pass
 
 # Represents the tokenizer for a dialog file
+
+
 class DialogTokenizer:
     # Tokenizes a given string into tokens matching the format of a dialog file
     def __init__(self, asString):
@@ -172,7 +249,7 @@ class DialogTokenizer:
         # This scuffed regex targets keywords, keeps strings together, etc.
         self.__tokens = re.findall(
             r"#.+|~\w+|:|\[|\]|\".+\"|_|\(|\)|\$\w+=\$\w+|\$\w+|\w+|\n", self.__asString)
-        self.__curToken = 0
+        self.__curToken = -1
 
     # Returns the next token in the list and increments the pointer
     def getNextToken(self):
@@ -189,6 +266,14 @@ class DialogTokenizer:
     # Returns the next token in the list without incrementing the pointer
     def peekNextToken(self):
         pos = self.__curToken + 1
+        if (len(self.__tokens) == pos):
+            return None
+        else:
+            return self.__tokens[pos]
+
+    # Peeks the token amount ahead in the list without incrementing the pointer
+    def peekAhead(self, amount):
+        pos = self.__curToken + amount
         if (len(self.__tokens) == pos):
             return None
         else:
