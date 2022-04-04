@@ -29,6 +29,20 @@ u:(say random thing): i am ["a good robot" "an evil ai" "NOT A MORON"]
 # Example of loading multiline definition
 u:(say multiline):~multiline
 
+# Example of multiple inputs from def
+~inputs:[hello hi "what up"]
+u:(~inputs): hi there
+
+# Example of inline list of inputs
+u:([bye "see ya" audios]): goodbye
+
+# Example of multiple inputs from def inside other inputs
+~inputs2:[what who why "how so"]
+u:(~inputs2 are you):such an abstract question
+
+# Example of multiple inputs from list inside other inputs
+u:(what [time day hour year] is it): i have no sense of time
+
 # Example of multiple inputs
 u:(my full name is _ _): hello $1 $2 $lastName=$2 $firstName=$1
     u1:(what was my name again): your last name is $lastName and your first name is $firstName

@@ -30,7 +30,7 @@ class Dialog:
     # userInput is a string that will be tested against each branch
     def handleInput(self, userInput):
         for branch in self.__curBranches:
-            if (branch.matchInput(userInput)):
+            if (branch.matchInput(userInput, self.__defMap)):
                 return branch.handleInput(userInput, self.__defMap, self.__varMap, self)
         return None
 
@@ -54,13 +54,115 @@ class DialogBranch:
     def addChildBranch(self, branch):
         self.__childrenBranches.append(branch)
 
+    # TODO: Add checking against strings of multiple words/testing
     # Returns true if the given input matches this branch
-    def matchInput(self, input):
+    def matchInput(self, input, defMap):
         inputWords = re.split(" ", input)
+
+        # Check against each input
+        inpIndex = 0
         for i in range(len(self.__expectedInput)):
-            if (self.__expectedInput[i][0] != "$"):
-                if (self.__expectedInput[i] != inputWords[i]):
+
+            # Check if not enough input
+            if (inpIndex >= len(inputWords)):
+                return False
+
+            # Checking against a list
+            if (type(self.__expectedInput[i]) is list):
+                # Check if matches any words in list
+                anyMatch = False
+                for j in range(len(self.__expectedInput[i])):
+                    if (self.__expectedInput[i][j] == inputWords[inpIndex]):
+                        anyMatch = True
+                        break
+                    # Current "word" is actuall a string of words
+                    elif (" " in self.__expectedInput[i][j]):
+
+                        # Look ahead in input for potential match
+                        lookAheadIndex = inpIndex
+                        stringWords = self.__expectedInput[i][j].split(" ")
+                        allMatch = True
+                        for word in stringWords:
+                            if (lookAheadIndex >= len(inputWords)):
+                                allMatch = False
+                            elif (inputWords[lookAheadIndex] != word):
+                                allMatch = False
+                                break
+                            lookAheadIndex += 1
+
+                        # Found match, change input index to match
+                        if (allMatch):
+                            anyMatch = True
+                            inpIndex = lookAheadIndex - 1
+                            break
+                        
+                if (not anyMatch):
                     return False
+
+            # Checking against a def
+            elif (self.__expectedInput[i][0] == "~"):
+                loadedDef = defMap[self.__expectedInput[i][1:]]
+                # def points to list
+                if (type(loadedDef) is list):
+                    anyMatch = False
+                    for j in range(len(loadedDef)):
+                        if (loadedDef[j] == inputWords[inpIndex]):
+                            anyMatch = True
+                            break
+
+                        # Current "word" is actuall a string of words
+                        elif (" " in loadedDef[j]):
+                            # Look ahead in input for potential match
+                            lookAheadIndex = inpIndex
+                            stringWords = loadedDef[j].split(" ")
+                            allMatch = True
+                            for word in stringWords:
+                                if (lookAheadIndex >= len(inputWords)):
+                                    allMatch = False
+                                elif (inputWords[lookAheadIndex] != word):
+                                    allMatch = False
+                                    break
+                                lookAheadIndex += 1
+
+                            # Found match, change input index to match
+                            if (allMatch):
+                                anyMatch = True
+                                inpIndex = lookAheadIndex
+                                break
+                        
+                    if (not anyMatch):
+                        return False
+                
+                # def points to a string of words
+                elif (" " in loadedDef):
+                    # Look ahead in input for potential match
+                    lookAheadIndex = inpIndex
+                    stringWords = loadedDef.split(" ")
+                    allMatch = True
+                    for word in stringWords:
+                        if (lookAheadIndex >= len(inputWords)):
+                            allMatch = False
+                        elif (inputWords[lookAheadIndex] != word):
+                            allMatch = False
+                            break
+                        lookAheadIndex += 1
+
+                    # Found match, change input index to match
+                    if (not allMatch):
+                        return False
+
+                    inpIndex = lookAheadIndex
+
+                # def points to a single word
+                elif (loadedDef != inputWords[inpIndex]):
+                        return False
+
+            # Checking against a variable or regular word
+            elif (self.__expectedInput[i][0] != "$"):
+                if (self.__expectedInput[i] != inputWords[inpIndex]):
+                    return False
+
+            inpIndex += 1
         return True
 
     # Handles user input, given a defMap and varMap and a working tree
@@ -326,11 +428,17 @@ class DialogParser:
         return [curBranch]
 
     # Parses the input for a USegment
-    # Returns a split list of words/underscores for writing to variables
+    # Returns a split list of words/underscores/arrays/~defs for writing to variables
     def __parseInput(self):
 
         curInput = self.__tokenizer.getNextToken()
-        if (re.match(r"[a-zA-Z0-9_]+", self.__tokenizer.peekNextToken())):
+
+        if (curInput == "["):
+            curInput = self.__parseList()
+            if (self.__tokenizer.getNextToken() != "]"):
+                self.__printError("]")
+
+        if (re.match(r"~?[a-zA-Z0-9_]+|\[", self.__tokenizer.peekNextToken())):
             restInput = self.__parseInput()
             restInput.insert(0, curInput)
             return restInput
