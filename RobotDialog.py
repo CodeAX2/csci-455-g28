@@ -34,7 +34,7 @@ class Dialog:
                 return branch.handleInput(userInput, self.__defMap, self.__varMap, self)
         return None
 
-    # Resets the tree back to its initial state
+    # Resets the tree back to its base branches
     def reset(self):
         self.__curBranches = self.__baseBranches
 
@@ -198,9 +198,11 @@ class DialogBranch:
         for updateVarTuple in self.updateVarArray:
             varMap[updateVarTuple[0]] = varMap[updateVarTuple[1]]
 
-        # Update the branch of the tree
+        # Update the branch of the tree, or go back to top if no children
         if (len(self.__childrenBranches) != 0):
             dialogTree.setCurBranches(self.__childrenBranches)
+        else:
+            dialogTree.reset()
 
         # Return the dialog
         return formattedOutput

@@ -13,4 +13,4 @@ while True:
         break
     print(tree.handleInput(inp))
 
-# TODO: tree should go back to base branches if reached bottom
+# TODO: handle error when variable is not defined
