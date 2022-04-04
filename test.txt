@@ -43,6 +43,9 @@ u:(~inputs2 are you):such an abstract question
 # Example of multiple inputs from list inside other inputs
 u:(what [time day hour year] is it): i have no sense of time
 
+# Example of list with strings for inputs
+u:(test [a b "c d" "e f"]): works
+
 # Example of multiple inputs
 u:(my full name is _ _): hello $1 $2 $lastName=$2 $firstName=$1
     u1:(what was my name again): your last name is $lastName and your first name is $firstName

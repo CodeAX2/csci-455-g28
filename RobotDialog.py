@@ -127,7 +127,7 @@ class DialogBranch:
                             # Found match, change input index to match
                             if (allMatch):
                                 anyMatch = True
-                                inpIndex = lookAheadIndex
+                                inpIndex = lookAheadIndex - 1
                                 break
                         
                     if (not anyMatch):
