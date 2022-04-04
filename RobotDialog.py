@@ -71,7 +71,7 @@ class DialogBranch:
                 # Check if matches any words in list
                 anyMatch = False
                 for j in range(len(self.__expectedInput[i])):
-                    if (self.__expectedInput[i][j] == inputWords[inpIndex]):
+                    if (self.__expectedInput[i][j].lower() == inputWords[inpIndex].lower()):
                         anyMatch = True
                         break
                     # Current "word" is actuall a string of words
@@ -84,7 +84,7 @@ class DialogBranch:
                         for word in stringWords:
                             if (lookAheadIndex >= len(inputWords)):
                                 allMatch = False
-                            elif (inputWords[lookAheadIndex] != word):
+                            elif (inputWords[lookAheadIndex].lower() != word.lower()):
                                 allMatch = False
                                 break
                             lookAheadIndex += 1
@@ -105,7 +105,7 @@ class DialogBranch:
                 if (type(loadedDef) is list):
                     anyMatch = False
                     for j in range(len(loadedDef)):
-                        if (loadedDef[j] == inputWords[inpIndex]):
+                        if (loadedDef[j].lower() == inputWords[inpIndex].lower()):
                             anyMatch = True
                             break
 
@@ -118,7 +118,7 @@ class DialogBranch:
                             for word in stringWords:
                                 if (lookAheadIndex >= len(inputWords)):
                                     allMatch = False
-                                elif (inputWords[lookAheadIndex] != word):
+                                elif (inputWords[lookAheadIndex].lower() != word.lower()):
                                     allMatch = False
                                     break
                                 lookAheadIndex += 1
@@ -141,7 +141,7 @@ class DialogBranch:
                     for word in stringWords:
                         if (lookAheadIndex >= len(inputWords)):
                             allMatch = False
-                        elif (inputWords[lookAheadIndex] != word):
+                        elif (inputWords[lookAheadIndex].lower() != word.lower()):
                             allMatch = False
                             break
                         lookAheadIndex += 1
@@ -153,12 +153,12 @@ class DialogBranch:
                     inpIndex = lookAheadIndex
 
                 # def points to a single word
-                elif (loadedDef != inputWords[inpIndex]):
+                elif (loadedDef.lower() != inputWords[inpIndex].lower()):
                         return False
 
             # Checking against a variable or regular word
             elif (self.__expectedInput[i][0] != "$"):
-                if (self.__expectedInput[i] != inputWords[inpIndex]):
+                if (self.__expectedInput[i].lower() != inputWords[inpIndex].lower()):
                     return False
 
             inpIndex += 1
@@ -180,6 +180,8 @@ class DialogBranch:
             # If the word is a variable
             if (self.__output[i][0] == "$"):
                 varName = self.__output[i][1:]
+                if (varName not in varMap):
+                    return None
                 curWord = varMap[varName]
             # If the word is a definition
             elif (self.__output[i][0] == "~"):
