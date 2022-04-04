@@ -54,7 +54,6 @@ class DialogBranch:
     def addChildBranch(self, branch):
         self.__childrenBranches.append(branch)
 
-    # TODO: Add checking against strings of multiple words/testing
     # Returns true if the given input matches this branch
     def matchInput(self, input, defMap):
         inputWords = re.split(" ", input)
@@ -335,7 +334,6 @@ class DialogParser:
             value = value[1:-1]
         return value
 
-    # TODO: Finish USegment
     # Parses a USegment and returns the created DialogBranch
     def __parseUSegmentList(self, x=None):
         if (x == None and self.__tokenizer.getNextToken() != "u"):

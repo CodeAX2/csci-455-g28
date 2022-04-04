@@ -1,7 +1,7 @@
 from email.mime import base
 from RobotDialog import *
 
-parser = DialogParser("test.txt")
+parser = DialogParser("test2.txt")
 tree = parser.parseFile()
 
 while True:
@@ -12,3 +12,5 @@ while True:
     if (inp == "exit"):
         break
     print(tree.handleInput(inp))
+
+# TODO: tree should go back to base branches if reached bottom
