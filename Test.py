@@ -1,4 +1,3 @@
-from email.mime import base
 from RobotDialog import *
 
 parser = DialogParser("test2.txt")
