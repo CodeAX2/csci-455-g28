@@ -224,7 +224,7 @@ class DialogBranch:
             if (self.__output[i][0] == "$"):
                 varName = self.__output[i][1:]
                 if (varName not in varMap):
-                    return None
+                    return "i do not know " + varName
                 curWord = varMap[varName]
             # If the word is a definition
             elif (self.__output[i][0] == "~"):

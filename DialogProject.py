@@ -11,6 +11,3 @@ while True:
     if (inp == "exit"):
         break
     print(tree.handleInput(inp))
-
-# TODO: What case do we branch back up to the top dialog option? 
-# Currently if there are no children branches, goes back to top
