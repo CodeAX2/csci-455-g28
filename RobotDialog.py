@@ -5,6 +5,8 @@ import re
 # Sorry guys....
 
 # Represents a dialog tree
+
+
 class Dialog:
     # Creates a new dialog tree
     # defMap is a mapping from string to string/list to provide values for definitions
@@ -31,27 +33,38 @@ class Dialog:
     def handleInput(self, userInput):
         # Check all the branches going up the tree
         startingBranches = self.__curBranches
-        while True:
 
-            # Check all branches to handle input
-            for branch in self.__curBranches:
-                if (branch.matchInput(userInput, self.__defMap)):
-                    return branch.handleInput(userInput, self.__defMap, self.__varMap, self)
-            
-            # No branches matched, check the next level up
-            parent = self.__curBranches[0].getParentBranch()
+        # Check all branches to handle input
+        for branch in self.__curBranches:
+            if (branch.matchInput(userInput, self.__defMap)):
+                return branch.handleInput(userInput, self.__defMap, self.__varMap, self)
 
-            # Already at top level, no matches, be sure to stay at same level
-            if (parent == None):
-                self.__curBranches = startingBranches
-                return None
+        # Move up a level
+        parent = self.__curBranches[0].getParentBranch()
+        if (parent == None):
+            # Already were at top level, no more to check
+            return None
 
-            if (parent.getParentBranch() == None):
-                # Now at base level
-                self.__curBranches = self.__baseBranches
-            else:
-                # Move up one level
-                self.__curBranches = parent.getParentBranch().getChildrenBranches()
+        # Check the one-higher level
+        grandparent = parent.getParentBranch()
+        if (grandparent == None):
+            self.__curBranches = self.__baseBranches
+        else:
+            self.__curBranches = grandparent.getChildrenBranches()
+
+        for branch in self.__curBranches:
+            if (branch.matchInput(userInput, self.__defMap)):
+                return branch.handleInput(userInput, self.__defMap, self.__varMap, self)
+
+        # Check the top-level
+        self.__curBranches = self.__baseBranches
+        for branch in self.__curBranches:
+            if (branch.matchInput(userInput, self.__defMap)):
+                return branch.handleInput(userInput, self.__defMap, self.__varMap, self)
+
+        # Found nothing, reset cur branches
+        self.__curBranches = startingBranches
+        return None
 
     # Resets the tree back to its base branches
     def reset(self):
@@ -124,7 +137,7 @@ class DialogBranch:
                             anyMatch = True
                             inpIndex = lookAheadIndex - 1
                             break
-                        
+
                 if (not anyMatch):
                     return False
 
@@ -158,10 +171,10 @@ class DialogBranch:
                                 anyMatch = True
                                 inpIndex = lookAheadIndex - 1
                                 break
-                        
+
                     if (not anyMatch):
                         return False
-                
+
                 # def points to a string of words
                 elif (" " in loadedDef):
                     # Look ahead in input for potential match
@@ -184,7 +197,7 @@ class DialogBranch:
 
                 # def points to a single word
                 elif (loadedDef.lower() != inputWords[inpIndex].lower()):
-                        return False
+                    return False
 
             # Checking against a variable or regular word
             elif (self.__expectedInput[i][0] != "$"):
