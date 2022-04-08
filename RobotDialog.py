@@ -29,10 +29,29 @@ class Dialog:
     # Handle current user input
     # userInput is a string that will be tested against each branch
     def handleInput(self, userInput):
-        for branch in self.__curBranches:
-            if (branch.matchInput(userInput, self.__defMap)):
-                return branch.handleInput(userInput, self.__defMap, self.__varMap, self)
-        return None
+        # Check all the branches going up the tree
+        startingBranches = self.__curBranches
+        while True:
+
+            # Check all branches to handle input
+            for branch in self.__curBranches:
+                if (branch.matchInput(userInput, self.__defMap)):
+                    return branch.handleInput(userInput, self.__defMap, self.__varMap, self)
+            
+            # No branches matched, check the next level up
+            parent = self.__curBranches[0].getParentBranch()
+
+            # Already at top level, no matches, be sure to stay at same level
+            if (parent == None):
+                self.__curBranches = startingBranches
+                return None
+
+            if (parent.getParentBranch() == None):
+                # Now at base level
+                self.__curBranches = self.__baseBranches
+            else:
+                # Move up one level
+                self.__curBranches = parent.getParentBranch().getChildrenBranches()
 
     # Resets the tree back to its base branches
     def reset(self):
@@ -50,9 +69,20 @@ class DialogBranch:
         self.__output = output
         self.updateVarArray = updateVarArray
         self.__childrenBranches = []
+        self.__parentBranch = None
 
     def addChildBranch(self, branch):
         self.__childrenBranches.append(branch)
+        branch.setParentBranch(self)
+
+    def setParentBranch(self, parent):
+        self.__parentBranch = parent
+
+    def getParentBranch(self):
+        return self.__parentBranch
+
+    def getChildrenBranches(self):
+        return self.__childrenBranches
 
     # Returns true if the given input matches this branch
     def matchInput(self, input, defMap):
@@ -203,8 +233,6 @@ class DialogBranch:
         # Update the branch of the tree, or go back to top if no children
         if (len(self.__childrenBranches) != 0):
             dialogTree.setCurBranches(self.__childrenBranches)
-        else:
-            dialogTree.reset()
 
         # Return the dialog
         return formattedOutput
