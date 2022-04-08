@@ -1,6 +1,6 @@
 from RobotDialog import *
 
-parser = DialogParser("test2.txt")
+parser = DialogParser("liveDemoFile.txt")
 tree = parser.parseFile()
 
 while True:

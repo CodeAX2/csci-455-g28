@@ -143,6 +143,9 @@ class DialogBranch:
 
             # Checking against a def
             elif (self.__expectedInput[i][0] == "~"):
+                # Unknown definition
+                if (self.__expectedInput[i][1:] not in defMap):
+                    return False
                 loadedDef = defMap[self.__expectedInput[i][1:]]
                 # def points to list
                 if (type(loadedDef) is list):
@@ -253,6 +256,9 @@ class DialogBranch:
     # Gets the output from a def
     # If the def points to a list, a random element is chosen
     def __getDefOutput(defMap, defName):
+        if (defName not in defMap):
+            return "Invalid Definition"
+
         defValue = defMap[defName]
         if(isinstance(defValue, list)):
             return random.choice(defValue)
