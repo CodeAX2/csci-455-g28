@@ -1,5 +1,5 @@
 #comments are ignored
-~choices: [choice robot "I am a robot"]
+~greetings: [choice robot "I am a robot"]
 u:(~greetings):[hi hello "what up" sup]
     u1:(second level):good
 	u1:(different):[one two]
