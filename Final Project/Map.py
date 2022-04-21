@@ -27,7 +27,7 @@ class Map:
                 self.__cells[x][y].populateNeighbors()
 
         # Remove random edges, yes this is scuffed, but it works mostly
-        toRemove = 12
+        toRemove = int(self.__size * self.__size / 2)
         while (toRemove != 0):
             x = random.randint(0, self.__size - 1)
             y = random.randint(0, self.__size - 1)
