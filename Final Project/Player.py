@@ -43,3 +43,6 @@ class Player:
         if (self.__posX == -1 and self.__posY == -1):
             self.__posX = x
             self.__posY = y
+    
+    def getRobot(self):
+        return self.__robot
