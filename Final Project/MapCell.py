@@ -112,3 +112,9 @@ class MapCell:
         if (self._west != None):
             total += 1
         return total
+
+    def getX(self):
+        return self._x
+
+    def getY(self):
+        return self._y

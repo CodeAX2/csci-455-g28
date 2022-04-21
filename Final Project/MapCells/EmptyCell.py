@@ -1,6 +1,6 @@
 from MapCell import *
 
-class StartCell(MapCell):
+class EmptyCell(MapCell):
     def __init__(self, map: Map, x: int, y: int):
         super().__init__(map, x, y)
 
