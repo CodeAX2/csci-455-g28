@@ -2,20 +2,24 @@ import random
 from types import CellType
 from Player import Player
 from Direction import Direction
+from tkinter import *
 
 
 class Map:
-    def __init__(self, player: Player, size: int,
-                 numRecharge: int,
-                 numCoffee: int,
-                 numEasy: int,
-                 numMedium: int,
-                 numHard: int
-                 ):
+    def __init__(self, player: Player, 
+                size: int,
+                canvas: Canvas,
+                numRecharge: int,
+                numCoffee: int,
+                numEasy: int,
+                numMedium: int,
+                numHard: int
+    ):
         from MapCell import MapCell
         self.__cells: list[list[MapCell]] = []
         self.__player = player
         self.__size = size
+        self.__canvas = canvas
 
         self.__fillMap(numRecharge, numCoffee, numEasy, numMedium, numHard)
 
@@ -35,8 +39,6 @@ class Map:
             for y in range(self.__size):
                 curCol.append(MapCells.EmptyCell(self, x, y))
             self.__cells.append(curCol)
-
-        # TODO: Fill map with different cell types, and start on perimeter
 
         # Set the start and treasure cells, yeah this is ugly, but oh well
         self.__treasureCell: MapCell = None
@@ -134,6 +136,9 @@ class Map:
                         self, x, y, healthMin, healthMax, atkMin, atkMax)
                     break
 
+    def getCanvas(self):
+        return self.__canvas
+
     def getPlayer(self):
         return self.__player
 
@@ -179,3 +184,4 @@ class Map:
                     lineBelow += "   "
             print(line)
             print(lineBelow)
+

@@ -1,18 +1,21 @@
+from concurrent.futures import process, thread
+from os import fdopen
 from Player import Player
 from Map import Map
 from Direction import Direction
+from tkinter import *
 
-if __name__ == "__main__":
+def playGame(window: Tk, canvas: Canvas):
 
     p = Player(None, 100, 1, 10, 50)
-    m = Map(p, 5, 3, 2, 6, 5, 3)
-
+    m = Map(p, 5, canvas, 3, 2, 6, 5, 3)
     remainingMoves = 50
 
     while (p.isAlive() and not p.hasWon() and remainingMoves >= 1):
         remainingMoves -= 1
 
         m.printMap()
+        m.renderMap()
 
         curCell = m.getCell(p.getX(), p.getY())
 
@@ -45,6 +48,10 @@ if __name__ == "__main__":
             dirToGo = Direction.EAST
         elif (toGo == "west"):
             dirToGo = Direction.WEST
+        elif (toGo == "exit"):
+            print("Goodbye!")
+            window.destroy()
+            return
 
         if (dirToGo != None):
             if (p.move(dirToGo)):
@@ -54,6 +61,18 @@ if __name__ == "__main__":
 
     if (remainingMoves <= 0):
         print("You ran out of moves!")
+
+if __name__ == "__main__":
+
+    window = Tk()
+    #window.attributes("-fullscreen", True)
+    window.geometry("1280x720")
+
+    canvas = Canvas(window, width=1280, height=720)
+    canvas.pack()
+
+    window.after(100, playGame, window, canvas)
+    window.mainloop()
         
 
         
