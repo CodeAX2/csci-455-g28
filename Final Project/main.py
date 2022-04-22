@@ -15,7 +15,7 @@ def playGame(window: Tk, canvas: Canvas):
         remainingMoves -= 1
 
         m.printMap()
-        m.renderMap()
+        p.drawExplored()
 
         curCell = m.getCell(p.getX(), p.getY())
 

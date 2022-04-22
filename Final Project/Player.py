@@ -1,9 +1,9 @@
 import random
 from Direction import Direction
 
-
 class Player:
     def __init__(self, robot, health, atkMin, atkMax, moves):
+        from MapCell import MapCell
         self.__robot = robot
         self.__health = health
         self.__maxHealth = health
@@ -18,6 +18,8 @@ class Player:
 
         self.__hasKey = False
         self.__won = False
+
+        self.__explored: list[MapCell] = []
 
     def applyDamage(self, damage):
         self.__health -= damage
@@ -54,6 +56,8 @@ class Player:
             self.__posX = x
             self.__posY = y
             self.__map: Map = map
+            self.__explored = []
+            self.__explored.append(self.__map.getCell(x, y))
 
     def getRobot(self):
         return self.__robot
@@ -69,6 +73,8 @@ class Player:
 
             # TODO: Robot animation
 
+            if (neighbor not in self.__explored):
+                self.__explored.append(neighbor)
             neighbor.handleInteraction()
 
             return True
@@ -88,8 +94,47 @@ class Player:
         self.__posX = x
         self.__posY = y
 
+        cell = self.__map.getCell(x, y)
+        if (cell not in self.__explored):
+            self.__explored.append(cell)
+
     def getX(self):
         return self.__posX
 
     def getY(self):
         return self.__posY
+
+    def drawExplored(self):
+        from MapCells import MapCells
+        canvas = self.__map.getCanvas()
+        canvas.delete("all")
+
+        for exploredCell in self.__explored:
+            
+            cellX = exploredCell.getX()
+            cellY = exploredCell.getY()
+
+            color = "blue"
+
+            if (type(exploredCell) is MapCells.TreasureCell):
+                color = "gold"
+            elif (type(exploredCell) is MapCells.FightCell):
+                if (not exploredCell.isComplete()):
+                    color = "red"
+
+            canvas.create_rectangle(cellX * 50 + 10, cellY * 50 + 10, cellX * 50 + 40, cellY * 50 + 40, fill=color)
+
+            if (exploredCell.getNeighbor(Direction.NORTH) != None):
+                canvas.create_rectangle(cellX * 50 + 20, cellY * 50, cellX * 50 + 30, cellY * 50 + 10, fill=color)
+
+            if (exploredCell.getNeighbor(Direction.EAST) != None):
+                canvas.create_rectangle(cellX * 50 + 40, cellY * 50 + 20, cellX * 50 + 50, cellY * 50 + 30, fill=color)
+
+            if (exploredCell.getNeighbor(Direction.SOUTH) != None):
+                canvas.create_rectangle(cellX * 50 + 20, cellY * 50 + 40, cellX * 50 + 30, cellY * 50 + 50, fill=color)
+
+            if (exploredCell.getNeighbor(Direction.WEST) != None):
+                canvas.create_rectangle(cellX * 50, cellY * 50 + 20, cellX * 50 + 10, cellY * 50 + 30, fill=color)
+
+        canvas.create_oval(self.__posX * 50 + 15, self.__posY * 50 + 15, self.__posX * 50 + 35, self.__posY * 50 + 35, fill="lime")
+
