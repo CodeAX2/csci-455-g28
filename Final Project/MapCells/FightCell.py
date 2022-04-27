@@ -4,7 +4,7 @@ from Enemy import Enemy
 from PIL import Image, ImageTk
 
 class FightCell(MapCell):
-    def __init__(self, map: Map, x: int, y: int, enemyHealthMin: int, enemyHealthMax: int, enemyAtkMin: int, enemyAtkMax: int):
+    def __init__(self, map: Map, x: int, y: int, enemyHealthMin: int, enemyHealthMax: int, enemyAtkMin: int, enemyAtkMax: int, enemyImage: str):
         self._enemies: list[Enemy] = []
 
         numEnemies = random.randint(3, 6)
@@ -13,7 +13,7 @@ class FightCell(MapCell):
                 enemyHealthMin, enemyHealthMax), enemyAtkMin, enemyAtkMax)
             self._enemies.append(enemy)
 
-        self.__img = ImageTk.PhotoImage(file="Final Project/Enemy.png")
+        self.__img = ImageTk.PhotoImage(file=enemyImage)
 
         super().__init__(map, x, y)
 
@@ -77,6 +77,8 @@ class FightCell(MapCell):
 
                 if (not self._map.getPlayer().isAlive()):
                     print("You died!")
+                    self.__drawDeath()
+                    self._completed = True
                     break
 
             if (len(self._enemies) == 0):
@@ -90,12 +92,37 @@ class FightCell(MapCell):
         canvas = self._map.getCanvas()
         canvas.delete("all")
 
+        totalHP = 0
+
         for i in range(len(self._enemies)):
             canvas.create_image(10 + i * (self.__img.width() + 10), 0, anchor=NW, image=self.__img)
-            canvas.create_text(
-                25 + i * (self.__img.width() + 10) + self.__img.width()/2, 
-                self.__img.height() + 15, 
-                text=("HP: " + str(self._enemies[i].getHealth())), 
-                font=("Helvetica","20","bold")
-            )
+            totalHP += self._enemies[i].getHealth()
+
+        canvas.create_text(
+            10, 
+            self.__img.height() + 25,
+            text=("Enemy HP: " + str(totalHP)), 
+            font=("Helvetica","20","bold"),
+            anchor=NW
+        )
+
+        canvas.create_text(
+            10, 
+            self.__img.height() + 55,
+            text=("Player HP: " + str(self._map.getPlayer().getHealth())), 
+            font=("Helvetica","20","bold"),
+            anchor=NW
+        )
+
+    def __drawDeath(self):
+        canvas = self._map.getCanvas()
+        canvas.delete("all")
+
+        canvas.create_text(
+            canvas.winfo_width()/2, 
+            canvas.winfo_height()/2,
+            text="YOU DIED!", 
+            font=("Helvetica","50","bold"),
+            fill="red"
+        )
 

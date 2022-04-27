@@ -76,9 +76,9 @@ class Map:
         self.__generateCellsApart(numRecharge, MapCells.RechargeCell)
 
         # Generate remaining cells
-        self.__generateFightCells(numEasy, 1, 3, 1, 1)
-        self.__generateFightCells(numMedium, 2, 4, 1, 2)
-        self.__generateFightCells(numHard, 2, 5, 2, 3)
+        self.__generateFightCells(numEasy, 1, 1, 1, 1, "Final Project/EnemyEasy.png")
+        self.__generateFightCells(numMedium, 2, 4, 1, 2, "Final Project/EnemyMedium.png")
+        self.__generateFightCells(numHard, 2, 5, 2, 3, "Final Project/EnemyHard.png")
 
         # TODO: Other fun cells
 
@@ -125,7 +125,7 @@ class Map:
                     insertedRecharges.append((x, y))
                     break
 
-    def __generateFightCells(self, count: int, healthMin: int, healthMax: int, atkMin: int, atkMax: int):
+    def __generateFightCells(self, count: int, healthMin: int, healthMax: int, atkMin: int, atkMax: int, imagePath: str):
         from MapCells import MapCells
         for _ in range(count):
             while True:
@@ -133,7 +133,7 @@ class Map:
                 y = random.randint(0, self.__size - 1)
                 if (type(self.__cells[x][y]) is MapCells.EmptyCell):
                     self.__cells[x][y] = MapCells.FightCell(
-                        self, x, y, healthMin, healthMax, atkMin, atkMax)
+                        self, x, y, healthMin, healthMax, atkMin, atkMax, imagePath)
                     break
 
     def getCanvas(self):

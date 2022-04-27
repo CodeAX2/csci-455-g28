@@ -1,5 +1,6 @@
 import random
 from Direction import Direction
+from tkinter import *
 
 class Player:
     def __init__(self, robot, health, atkMin, atkMax, moves):
@@ -138,3 +139,10 @@ class Player:
 
         canvas.create_oval(self.__posX * 50 + 15, self.__posY * 50 + 15, self.__posX * 50 + 35, self.__posY * 50 + 35, fill="lime")
 
+        canvas.create_text(
+            10, 
+            self.__map.getSize() * 50 + 10,
+            text=("Player HP: " + str(self.__health)), 
+            font=("Helvetica","20","bold"),
+            anchor=NW
+        )
