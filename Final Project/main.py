@@ -75,8 +75,6 @@ if __name__ == "__main__":
     window.mainloop()
         
 
-        
-
 # TODO:
 # Proper output engine for robot
 # Robot animations

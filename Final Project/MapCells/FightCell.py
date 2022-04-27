@@ -1,5 +1,7 @@
+from tkinter import *
 from MapCell import *
 from Enemy import Enemy
+from PIL import Image, ImageTk
 
 class FightCell(MapCell):
     def __init__(self, map: Map, x: int, y: int, enemyHealthMin: int, enemyHealthMax: int, enemyAtkMin: int, enemyAtkMax: int):
@@ -11,6 +13,8 @@ class FightCell(MapCell):
                 enemyHealthMin, enemyHealthMax), enemyAtkMin, enemyAtkMax)
             self._enemies.append(enemy)
 
+        self.__img = ImageTk.PhotoImage(file="Final Project/Enemy.png")
+
         super().__init__(map, x, y)
 
     def handleInteraction(self):
@@ -18,6 +22,7 @@ class FightCell(MapCell):
         # TODO: Replace print statements with proper dialog, and add animations
         if (not self._completed):
             while len(self._enemies) > 0:
+                self.__drawFight()
                 totalHP = 0
                 for enemy in self._enemies:
                     totalHP += enemy.getHealth()
@@ -80,3 +85,17 @@ class FightCell(MapCell):
 
     def getRemainingEnemies(self):
         return len(self._enemies)
+
+    def __drawFight(self):
+        canvas = self._map.getCanvas()
+        canvas.delete("all")
+
+        for i in range(len(self._enemies)):
+            canvas.create_image(10 + i * (self.__img.width() + 10), 0, anchor=NW, image=self.__img)
+            canvas.create_text(
+                25 + i * (self.__img.width() + 10) + self.__img.width()/2, 
+                self.__img.height() + 15, 
+                text=("HP: " + str(self._enemies[i].getHealth())), 
+                font=("Helvetica","20","bold")
+            )
+
