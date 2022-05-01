@@ -2,19 +2,20 @@ import random
 from types import CellType
 from Player import Player
 from Direction import Direction
+from BColors import BColors
 from tkinter import *
 
 
 class Map:
-    def __init__(self, player: Player, 
-                size: int,
-                canvas: Canvas,
-                numRecharge: int,
-                numCoffee: int,
-                numEasy: int,
-                numMedium: int,
-                numHard: int
-    ):
+    def __init__(self, player: Player,
+                 size: int,
+                 canvas: Canvas,
+                 numRecharge: int,
+                 numCoffee: int,
+                 numEasy: int,
+                 numMedium: int,
+                 numHard: int
+                 ):
         from MapCell import MapCell
         self.__cells: list[list[MapCell]] = []
         self.__player = player
@@ -76,9 +77,9 @@ class Map:
         self.__generateCellsApart(numRecharge, MapCells.RechargeCell)
 
         # Generate remaining cells
-        self.__generateFightCells(numEasy, 1, 1, 1, 1, "Final Project/EnemyEasy.png")
-        self.__generateFightCells(numMedium, 2, 4, 1, 2, "Final Project/EnemyMedium.png")
-        self.__generateFightCells(numHard, 2, 5, 2, 3, "Final Project/EnemyHard.png")
+        self.__generateFightCells(numEasy, 1, 1, 1, 1, "images/EnemyEasy.png")
+        self.__generateFightCells(numMedium, 2, 4, 1, 2, "images/EnemyMedium.png")
+        self.__generateFightCells(numHard, 2, 5, 2, 3, "images/EnemyHard.png")
 
         # TODO: Other fun cells
 
@@ -98,7 +99,7 @@ class Map:
 
                 smallNeighbor = False
                 for i in range(len(cell.getNeighbors())):
-                    if (cell.getNeighbors()[i] != None and cell.getNeighbors()[i].getNumNeighbors() <= 2):
+                    if (cell.getNeighbors()[i] is not None and cell.getNeighbors()[i].getNumNeighbors() <= 2):
                         smallNeighbor = True
                         break
 
@@ -125,7 +126,8 @@ class Map:
                     insertedRecharges.append((x, y))
                     break
 
-    def __generateFightCells(self, count: int, healthMin: int, healthMax: int, atkMin: int, atkMax: int, imagePath: str):
+    def __generateFightCells(self, count: int, healthMin: int, healthMax: int, atkMin: int, atkMax: int,
+                             imagePath: str):
         from MapCells import MapCells
         for _ in range(count):
             while True:
@@ -159,29 +161,28 @@ class Map:
             for x in range(self.__size):
                 cell = self.getCell(x, y)
                 if (self.__player.getX() == x and self.__player.getY() == y):
-                    line += "P"
+                    line += BColors.CYAN + BColors.BOLD + "P" + BColors.ENDC
                 elif (type(cell) is MapCells.StartCell):
-                    line += "S"
+                    line += BColors.BOLD + "S" + BColors.ENDC
                 elif (type(cell) is MapCells.TreasureCell):
                     line += "T"
                 elif (type(cell) is MapCells.CoffeeShopCell):
                     line += "C"
                 elif (type(cell) is MapCells.RechargeCell):
-                    line += "R"
+                    line += BColors.GREEN + "R" + BColors.ENDC
                 elif (type(cell) is MapCells.FightCell):
-                    line += str(cell.getRemainingEnemies())
+                    line += BColors.RED + str(cell.getRemainingEnemies()) + BColors.ENDC
                 else:
                     line += "X"
 
-                if (cell.getNeighbor(Direction.EAST) != None):
+                if (cell.getNeighbor(Direction.EAST) is not None):
                     line += "--"
                 else:
                     line += "  "
 
-                if (cell.getNeighbor(Direction.SOUTH) != None):
+                if (cell.getNeighbor(Direction.SOUTH) is not None):
                     lineBelow += "|  "
                 else:
                     lineBelow += "   "
             print(line)
             print(lineBelow)
-

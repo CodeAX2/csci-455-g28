@@ -5,8 +5,8 @@ from Map import Map
 from Direction import Direction
 from tkinter import *
 
-def playGame(window: Tk, canvas: Canvas):
 
+def playGame(window: Tk, canvas: Canvas):
     p = Player(None, 100, 1, 10, 50)
     m = Map(p, 5, canvas, 3, 2, 6, 5, 3)
     remainingMoves = 50
@@ -22,7 +22,7 @@ def playGame(window: Tk, canvas: Canvas):
         # Get available directions
         available = []
         for dir in list(Direction):
-            if (curCell.getNeighbor(dir) != None):
+            if (curCell.getNeighbor(dir) is not None):
                 available.append(dir)
 
         query = "i can go"
@@ -53,7 +53,7 @@ def playGame(window: Tk, canvas: Canvas):
             window.destroy()
             return
 
-        if (dirToGo != None):
+        if (dirToGo is not None):
             if (p.move(dirToGo)):
                 continue
 
@@ -62,10 +62,10 @@ def playGame(window: Tk, canvas: Canvas):
     if (remainingMoves <= 0):
         print("You ran out of moves!")
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     window = Tk()
-    #window.attributes("-fullscreen", True)
+    # window.attributes("-fullscreen", True)
     window.geometry("1280x720")
 
     canvas = Canvas(window, width=1280, height=720)
@@ -73,7 +73,6 @@ if __name__ == "__main__":
 
     window.after(100, playGame, window, canvas)
     window.mainloop()
-        
 
 # TODO:
 # Proper output engine for robot

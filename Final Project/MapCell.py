@@ -118,3 +118,7 @@ class MapCell:
 
     def getY(self):
         return self._y
+
+    def getRemainingEnemies(self):
+        # Thor - Pycharm wanted this method for the superclass. Normal MapCells contain zero enemies
+        return 0

@@ -26,10 +26,15 @@ class FightCell(MapCell):
                 totalHP = 0
                 for enemy in self._enemies:
                     totalHP += enemy.getHealth()
+                numEnemies = len(self._enemies)
+                enemiesPronoun = "enemy" if numEnemies == 1 else "enemies"
+                enemiesQuantifier = "is" if numEnemies == 1 else "are"
                 print(
-                    "There are",
-                    len(self._enemies),
-                    "enemies in this room! They have",
+                    "There",
+                    enemiesQuantifier,
+                    numEnemies,
+                    enemiesPronoun,
+                    "in this room! They have",
                     totalHP,
                     "health left! You have",
                     self._map.getPlayer().getHealth(),
@@ -43,7 +48,7 @@ class FightCell(MapCell):
                     weakestEnemy = None
 
                     for enemy in self._enemies:
-                        if (weakestEnemy == None):
+                        if (weakestEnemy is None):
                             weakestEnemy = enemy
                         else:
                             if (enemy.getHealth() < weakestEnemy.getHealth()):
