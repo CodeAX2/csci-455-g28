@@ -11,6 +11,7 @@ class Map:
                  size: int,
                  canvas: Canvas,
                  numRecharge: int,
+                 numPuzzle: int,
                  numCoffee: int,
                  numEasy: int,
                  numMedium: int,
@@ -22,10 +23,11 @@ class Map:
         self.__size = size
         self.__canvas = canvas
 
-        self.__fillMap(numRecharge, numCoffee, numEasy, numMedium, numHard)
+        self.__fillMap(numRecharge, numPuzzle, numCoffee, numEasy, numMedium, numHard)
 
     def __fillMap(self,
                   numRecharge: int,
+                  numPuzzle: int,
                   numCoffee: int,
                   numEasy: int,
                   numMedium: int,
@@ -75,6 +77,9 @@ class Map:
 
         # Generate recharge points
         self.__generateCellsApart(numRecharge, MapCells.RechargeCell)
+
+        # Generate puzzle points
+        self.__generateCellsApart(numPuzzle, MapCells.PuzzleCell)
 
         # Generate remaining cells
         self.__generateFightCells(numEasy, 1, 1, 1, 1, "images/EnemyEasy.png")
@@ -161,7 +166,7 @@ class Map:
             for x in range(self.__size):
                 cell = self.getCell(x, y)
                 if (self.__player.getX() == x and self.__player.getY() == y):
-                    line += BColors.CYAN + BColors.BOLD + "P" + BColors.ENDC
+                    line += BColors.BOLD + "▇" + BColors.ENDC
                 elif (type(cell) is MapCells.StartCell):
                     line += BColors.BOLD + "S" + BColors.ENDC
                 elif (type(cell) is MapCells.TreasureCell):
@@ -172,6 +177,8 @@ class Map:
                     line += BColors.GREEN + "R" + BColors.ENDC
                 elif (type(cell) is MapCells.FightCell):
                     line += BColors.RED + str(cell.getRemainingEnemies()) + BColors.ENDC
+                elif (type(cell) is MapCells.PuzzleCell):
+                    line += BColors.BLUE + "?" + BColors.ENDC
                 else:
                     line += "X"
 

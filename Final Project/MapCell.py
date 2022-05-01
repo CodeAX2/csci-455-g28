@@ -20,7 +20,7 @@ class MapCell:
     def isComplete(self):
         return self._completed
 
-    def handleInteraction():
+    def handleInteraction(self):
         pass
 
     def getNeighbors(self):
