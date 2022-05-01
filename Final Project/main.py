@@ -65,10 +65,10 @@ def playGame(window: Tk, canvas: Canvas):
         print("You ran out of moves!")
 
 
-if __name__ == "__main__":
-    test = MapCells.PuzzleCell(None, 0, 0)
-    test.handleInteraction()
+# test = MapCells.PuzzleCell(None, 0, 0)
+# test.handleInteraction()
 
+if __name__ == "__main__":
     window = Tk()
     # window.attributes("-fullscreen", True)
     window.geometry("1280x720")

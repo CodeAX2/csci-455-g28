@@ -43,7 +43,7 @@ class FightCell(MapCell):
 
                 action = input("What do you do? attack or run: ")
 
-                if (action == "attack"):
+                if (action == "attack" or action == "a"):
                     damageDone = self._map.getPlayer().generateAttack()
                     weakestEnemy = None
 
