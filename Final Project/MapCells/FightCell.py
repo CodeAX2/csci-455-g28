@@ -46,10 +46,6 @@ class FightCell(MapCell):
                 sayText("What do you do? attack or run")
                 action = getSpeechInput()
 
-                if (action == None):
-                    sayText("Invalid option!")
-                    continue
-
                 if ("attack" in action):
                     damageDone = self._map.getPlayer().generateAttack()
                     weakestEnemy = None
