@@ -1,6 +1,8 @@
 import random
 from Direction import Direction
 from tkinter import *
+#from servoCTL import TangoBot
+
 
 class Player:
     def __init__(self, robot, health, atkMin, atkMax, moves):
@@ -68,11 +70,34 @@ class Player:
         cell: MapCell = self.__map.getCell(self.__posX, self.__posY)
         neighbor = cell.getNeighbor(dir)
         if (neighbor != None):
+
+            toRotate = 0
+            
+            if (dir == Direction.EAST):
+                toRotate = 90
+            elif (dir == Direction.SOUTH):
+                toRotate = 180
+            elif (dir == Direction.WEST):
+                toRotate = 270
+
+            if (self.__lastDirection == Direction.EAST):
+                toRotate -= 90
+            elif (self.__lastDirection == Direction.SOUTH):
+                toRotate -= 180
+            elif (self.__lastDirection == Direction.WEST):
+                toRotate -= 270
+
+            if (abs(360 + toRotate) < abs(toRotate)):
+                toRotate = 360 + toRotate
+            elif (abs(-360 + toRotate) < abs(toRotate)):
+                toRotate = -360 + toRotate
+
+            # TODO: Rotate robot
+            # TODO: Move robot forward
+
             self.__posX = neighbor.getX()
             self.__posY = neighbor.getY()
             self.__lastDirection = dir
-
-            # TODO: Robot animation
 
             if (neighbor not in self.__explored):
                 self.__explored.append(neighbor)
@@ -111,7 +136,7 @@ class Player:
         canvas.delete("all")
 
         for exploredCell in self.__explored:
-            
+
             cellX = exploredCell.getX()
             cellY = exploredCell.getY()
 
@@ -123,26 +148,32 @@ class Player:
                 if (not exploredCell.isComplete()):
                     color = "red"
 
-            canvas.create_rectangle(cellX * 50 + 10, cellY * 50 + 10, cellX * 50 + 40, cellY * 50 + 40, fill=color)
+            canvas.create_rectangle(
+                cellX * 50 + 10, cellY * 50 + 10, cellX * 50 + 40, cellY * 50 + 40, fill=color)
 
             if (exploredCell.getNeighbor(Direction.NORTH) != None):
-                canvas.create_rectangle(cellX * 50 + 20, cellY * 50, cellX * 50 + 30, cellY * 50 + 10, fill=color)
+                canvas.create_rectangle(
+                    cellX * 50 + 20, cellY * 50, cellX * 50 + 30, cellY * 50 + 10, fill=color)
 
             if (exploredCell.getNeighbor(Direction.EAST) != None):
-                canvas.create_rectangle(cellX * 50 + 40, cellY * 50 + 20, cellX * 50 + 50, cellY * 50 + 30, fill=color)
+                canvas.create_rectangle(
+                    cellX * 50 + 40, cellY * 50 + 20, cellX * 50 + 50, cellY * 50 + 30, fill=color)
 
             if (exploredCell.getNeighbor(Direction.SOUTH) != None):
-                canvas.create_rectangle(cellX * 50 + 20, cellY * 50 + 40, cellX * 50 + 30, cellY * 50 + 50, fill=color)
+                canvas.create_rectangle(
+                    cellX * 50 + 20, cellY * 50 + 40, cellX * 50 + 30, cellY * 50 + 50, fill=color)
 
             if (exploredCell.getNeighbor(Direction.WEST) != None):
-                canvas.create_rectangle(cellX * 50, cellY * 50 + 20, cellX * 50 + 10, cellY * 50 + 30, fill=color)
+                canvas.create_rectangle(
+                    cellX * 50, cellY * 50 + 20, cellX * 50 + 10, cellY * 50 + 30, fill=color)
 
-        canvas.create_oval(self.__posX * 50 + 15, self.__posY * 50 + 15, self.__posX * 50 + 35, self.__posY * 50 + 35, fill="lime")
+        canvas.create_oval(self.__posX * 50 + 15, self.__posY * 50 +
+                           15, self.__posX * 50 + 35, self.__posY * 50 + 35, fill="lime")
 
         canvas.create_text(
-            10, 
+            10,
             self.__map.getSize() * 50 + 10,
-            text=("Player HP: " + str(self.__health)), 
-            font=("Helvetica","20","bold"),
+            text=("Player HP: " + str(self.__health)),
+            font=("Helvetica", "20", "bold"),
             anchor=NW
         )

@@ -1,4 +1,5 @@
 from MapCell import *
+from TTS import sayText
 
 class TreasureCell(MapCell):
     def __init__(self, map: Map, x: int, y: int):
@@ -6,10 +7,8 @@ class TreasureCell(MapCell):
 
     def handleInteraction(self):
         if (self._map.getPlayer().hasFoundKey()):
-            # TODO: Convert print to dialog
-            print("You Win!")
+            sayText("You Win!")
             self._completed = True
             self._map.getPlayer().win()
         else:
-            # TODO: Convert print to dialog
-            print("You need a key to open the treasure!")
+            sayText("You need a key to open the treasure!")

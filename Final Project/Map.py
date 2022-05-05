@@ -15,7 +15,8 @@ class Map:
                  numCoffee: int,
                  numEasy: int,
                  numMedium: int,
-                 numHard: int
+                 numHard: int,
+                 numRickRoll: int
                  ):
         from MapCell import MapCell
         self.__cells: list[list[MapCell]] = []
@@ -23,7 +24,7 @@ class Map:
         self.__size = size
         self.__canvas = canvas
 
-        self.__fillMap(numRecharge, numPuzzle, numCoffee, numEasy, numMedium, numHard)
+        self.__fillMap(numRecharge, numPuzzle, numCoffee, numEasy, numMedium, numHard, numRickRoll)
 
     def __fillMap(self,
                   numRecharge: int,
@@ -31,7 +32,8 @@ class Map:
                   numCoffee: int,
                   numEasy: int,
                   numMedium: int,
-                  numHard: int
+                  numHard: int,
+                  numRickRoll: int
                   ):
         from MapCells import MapCells
         from MapCell import MapCell
@@ -81,12 +83,13 @@ class Map:
         # Generate puzzle points
         self.__generateCellsApart(numPuzzle, MapCells.PuzzleCell)
 
-        # Generate remaining cells
-        self.__generateFightCells(numEasy, 1, 1, 1, 1, "images/EnemyEasy.png")
-        self.__generateFightCells(numMedium, 2, 4, 1, 2, "images/EnemyMedium.png")
-        self.__generateFightCells(numHard, 2, 5, 2, 3, "images/EnemyHard.png")
+        # Generate rick roll
+        self.__generateCellsApart(numRickRoll, MapCells.RickRollCell)
 
-        # TODO: Other fun cells
+        # Generate remaining cells
+        self.__generateFightCells(numEasy, 1, 1, 1, 1, "Final Project/images/EnemyEasy.png")
+        self.__generateFightCells(numMedium, 2, 4, 1, 2, "Final Project/images/EnemyMedium.png")
+        self.__generateFightCells(numHard, 2, 5, 2, 3, "Final Project/images/EnemyHard.png")
 
         # Populate cell neighbors
         for x in range(self.__size):
@@ -179,6 +182,8 @@ class Map:
                     line += BColors.RED + str(cell.getRemainingEnemies()) + BColors.ENDC
                 elif (type(cell) is MapCells.PuzzleCell):
                     line += BColors.BLUE + "?" + BColors.ENDC
+                elif(type(cell) is MapCells.RickRollCell):
+                    line += BColors.YELLOW + "!" + BColors.ENDC
                 else:
                     line += "X"
 

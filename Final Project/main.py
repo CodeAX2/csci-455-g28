@@ -6,20 +6,30 @@ from Player import Player
 from Map import Map
 from Direction import Direction
 from tkinter import *
+from TTS import sayText
+from Speech import getSpeechInput
+import threading
+#from servoCTL import *
+
+shouldDestroy = False
 
 
 def playGame(window: Tk, canvas: Canvas):
+    #ctl = ServoCTL()
+    #ctl.reset()
+    #robot = TangoBot(ctl, 1/30)
+
     p = Player(None, 100, 1, 10, 50)
-    m = Map(p, 5, canvas, 3, 1, 2, 6, 5, 3)
+    m = Map(p, 5, canvas, 3, 1, 2, 6, 5, 3, 3)
     remainingMoves = 50
 
     while (p.isAlive() and not p.hasWon() and remainingMoves >= 1):
         remainingMoves -= 1
 
+        curCell = m.getCell(p.getX(), p.getY())
+
         m.printMap()
         p.drawExplored()
-
-        curCell = m.getCell(p.getX(), p.getY())
 
         # Get available directions
         available = []
@@ -39,7 +49,8 @@ def playGame(window: Tk, canvas: Canvas):
                 query += " west"
 
         query += ". What direction should I go? "
-        toGo = input(query)
+        sayText(query)
+        toGo = getSpeechInput()
 
         dirToGo = None
         if (toGo == "north" or toGo == 'n'):
@@ -51,18 +62,21 @@ def playGame(window: Tk, canvas: Canvas):
         elif (toGo == "west" or toGo == 'w'):
             dirToGo = Direction.WEST
         elif (toGo == "exit"):
-            print("Goodbye!")
-            window.destroy()
+            sayText("Goodbye!")
+            window.quit()
             return
 
         if (dirToGo is not None):
             if (p.move(dirToGo)):
                 continue
 
-        print("Invalid direction!")
+        sayText("Invalid direction!")
 
     if (remainingMoves <= 0):
         print("You ran out of moves!")
+
+    #ctl.reset()
+    #robot.stop()
 
 
 # test = MapCells.PuzzleCell(None, 0, 0)
@@ -76,8 +90,13 @@ if __name__ == "__main__":
     canvas = Canvas(window, width=1280, height=720)
     canvas.pack()
 
-    window.after(100, playGame, window, canvas)
+    drawThread = threading.Thread(target=playGame, args=(window, canvas))
+    window.after(100, lambda : drawThread.start())
+
     window.mainloop()
+
+    drawThread.join()
+
 
 # TODO:
 # Proper output engine for robot

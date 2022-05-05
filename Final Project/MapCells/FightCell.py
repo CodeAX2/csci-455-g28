@@ -2,6 +2,7 @@ from tkinter import *
 from MapCell import *
 from Enemy import Enemy
 from PIL import Image, ImageTk
+from TTS import sayText
 
 class FightCell(MapCell):
     def __init__(self, map: Map, x: int, y: int, enemyHealthMin: int, enemyHealthMax: int, enemyAtkMin: int, enemyAtkMax: int, enemyImage: str):
@@ -19,7 +20,7 @@ class FightCell(MapCell):
 
     def handleInteraction(self):
 
-        # TODO: Replace print statements with proper dialog, and add animations
+        # TODO: add animations
         if (not self._completed):
             while len(self._enemies) > 0:
                 self.__drawFight()
@@ -27,21 +28,22 @@ class FightCell(MapCell):
                 for enemy in self._enemies:
                     totalHP += enemy.getHealth()
                 numEnemies = len(self._enemies)
-                enemiesPronoun = "enemy" if numEnemies == 1 else "enemies"
-                enemiesQuantifier = "is" if numEnemies == 1 else "are"
-                print(
-                    "There",
-                    enemiesQuantifier,
-                    numEnemies,
-                    enemiesPronoun,
-                    "in this room! They have",
-                    totalHP,
-                    "health left! You have",
-                    self._map.getPlayer().getHealth(),
+                enemiesPronoun = "enemy " if numEnemies == 1 else "enemies "
+                enemiesQuantifier = "is " if numEnemies == 1 else "are "
+                sayText(
+                    "There " + 
+                    enemiesQuantifier + 
+                    str(numEnemies) + " " +
+                    enemiesPronoun + 
+                    "in this room! They have " +
+                    str(totalHP) + " " +
+                    "health left! You have " +
+                    str(self._map.getPlayer().getHealth()) + " " +
                     "health left!"
                 )
 
-                action = input("What do you do? attack or run: ")
+                sayText("What do you do? attack or run")
+                action = input()
 
                 if (action == "attack" or action == "a"):
                     damageDone = self._map.getPlayer().generateAttack()
@@ -55,39 +57,46 @@ class FightCell(MapCell):
                                 weakestEnemy = enemy
 
                     weakestEnemy.applyDamage(damageDone)
-                    print("You did", damageDone, "damage!")
+                    killedEnemy = False
 
                     if (not weakestEnemy.isAlive()):
-                        print("You killed an enemy!")
                         self._enemies.remove(weakestEnemy)
+                        killedEnemy = True
+
+                    self.__drawFight()
+
+                    sayText("You did " + str(damageDone) + " damage!")
+                    if (killedEnemy):
+                        sayText("You killed an enemy!")                    
 
                 elif (action == "run"):
                     runOutcome = random.random()
                     if (len(self._enemies) > 2):
-                        print("Too many enemies to run away!")
+                        sayText("Too many enemies to run away!")
                     elif (runOutcome < 0.75):
                         newX = random.randint(0, self._map.getSize() - 1)
                         newY = random.randint(0, self._map.getSize() - 1)
-                        print("You ran away!")
+                        sayText("You ran away!")
                         self._map.getPlayer().runToCell(newX, newY)
                         break
                     else:
-                        print("You couldn't escape!")
+                        sayText("You couldn't escape!")
 
                 totalDamage = 0
                 for enemy in self._enemies:
                     totalDamage += enemy.generateAttack()
                 self._map.getPlayer().applyDamage(totalDamage)
-                print("You took", totalDamage, "damage!")
+                self.__drawFight()
+                sayText("You took " + str(totalDamage) + " damage!")
 
                 if (not self._map.getPlayer().isAlive()):
-                    print("You died!")
                     self.__drawDeath()
+                    sayText("You died!")
                     self._completed = True
                     break
 
             if (len(self._enemies) == 0):
-                print("You defeated all the enemies!")
+                sayText("You defeated all the enemies!")
                 self._completed = True
 
     def getRemainingEnemies(self):

@@ -6,3 +6,4 @@ from MapCells.RechargeCell import RechargeCell
 from MapCells.TreasureCell import TreasureCell
 from MapCells.StartCell import StartCell
 from MapCells.PuzzleCell import PuzzleCell
+from MapCells.RickRollCell import RickRollCell
