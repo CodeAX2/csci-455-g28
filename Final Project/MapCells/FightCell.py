@@ -3,6 +3,7 @@ from MapCell import *
 from Enemy import Enemy
 from PIL import Image, ImageTk
 from TTS import sayText
+from Speech import getSpeechInput
 
 class FightCell(MapCell):
     def __init__(self, map: Map, x: int, y: int, enemyHealthMin: int, enemyHealthMax: int, enemyAtkMin: int, enemyAtkMax: int, enemyImage: str):
@@ -43,9 +44,9 @@ class FightCell(MapCell):
                 )
 
                 sayText("What do you do? attack or run")
-                action = input()
+                action = getSpeechInput()
 
-                if (action == "attack" or action == "a"):
+                if ("attack" in action):
                     damageDone = self._map.getPlayer().generateAttack()
                     weakestEnemy = None
 
@@ -69,7 +70,7 @@ class FightCell(MapCell):
                     if (killedEnemy):
                         sayText("You killed an enemy!")                    
 
-                elif (action == "run"):
+                elif ("run" in action):
                     runOutcome = random.random()
                     if (len(self._enemies) > 2):
                         sayText("Too many enemies to run away!")
