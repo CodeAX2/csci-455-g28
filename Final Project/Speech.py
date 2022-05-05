@@ -1,12 +1,12 @@
 import speech_recognition as sr
 
-r = sr.Recognizer()
 
-def getSpeechInput():
+with sr.Microphone() as source:
 
-    with sr.Microphone as source:
+    r = sr.Recognizer()
+    r.adjust_for_ambient_noise(source)
 
-        r.adjust_for_ambient_noise(source)
+    def getSpeechInput():
 
         try:
             audio = r.listen(source)
