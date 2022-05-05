@@ -51,6 +51,7 @@ def playGame(window: Tk, canvas: Canvas):
         query += ". What direction should I go? "
         sayText(query)
         toGo = getSpeechInput()
+        print("Got", toGo)
 
         dirToGo = None
         if (toGo == "north" or toGo == 'n'):
