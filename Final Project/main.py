@@ -99,8 +99,5 @@ if __name__ == "__main__":
 
 
 # TODO:
-# Proper output engine for robot
 # Robot animations
-# Screen animations
-# User input loop
-# Finish fun and puzzle cells
+# Finish puzzle cells
