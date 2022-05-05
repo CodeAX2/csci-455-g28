@@ -8,6 +8,6 @@ def getSpeechInput():
         try:
             audio = r.listen(source)            
             word = r.recognize_google(audio)
-            return word
+            return str.lower(word).split(" ")
         except sr.UnknownValueError:
             return None

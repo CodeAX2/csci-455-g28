@@ -54,15 +54,15 @@ def playGame(window: Tk, canvas: Canvas):
         print("Got", toGo)
 
         dirToGo = None
-        if (toGo == "north" or toGo == 'n'):
+        if ("north" in toGo):
             dirToGo = Direction.NORTH
-        elif (toGo == "south" or toGo == 's'):
+        elif ("south" in toGo):
             dirToGo = Direction.SOUTH
-        elif (toGo == "east" or toGo == 'e'):
+        elif ("east" in toGo):
             dirToGo = Direction.EAST
-        elif (toGo == "west" or toGo == 'w'):
+        elif ("west" in toGo):
             dirToGo = Direction.WEST
-        elif (toGo == "exit"):
+        elif ("exit" in toGo):
             sayText("Goodbye!")
             window.quit()
             return
