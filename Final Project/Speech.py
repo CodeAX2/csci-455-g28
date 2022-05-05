@@ -1,15 +1,16 @@
 import speech_recognition as sr
 
+r = sr.Recognizer()
 
-with sr.Microphone as source:
+def getSpeechInput():
 
-    r = sr.Recognizer()
-    r.adjust_for_ambient_noise(source)
+    with sr.Microphone as source:
 
-    def getSpeechInput():
-            try:
-                audio = r.listen(source)            
-                word = r.recognize_google(audio)
-                return str.lower(word).split(" ")
-            except sr.UnknownValueError:
-                return []
+        r.adjust_for_ambient_noise(source)
+
+        try:
+            audio = r.listen(source)
+            word = r.recognize_google(audio)
+            return str.lower(word).split(" ")
+        except sr.UnknownValueError:
+            return []
