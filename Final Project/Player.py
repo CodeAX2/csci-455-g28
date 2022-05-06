@@ -1,73 +1,75 @@
 import random
+import time
 from Direction import Direction
 from tkinter import *
-#from servoCTL import TangoBot
+from RobotMovement import RobotMovement
 
 
 class Player:
     def __init__(self, robot, health, atkMin, atkMax, moves):
         from MapCell import MapCell
-        self.__robot = robot
-        self.__health = health
-        self.__maxHealth = health
-        self.__atkMin = atkMin
-        self.__atkMax = atkMax
-        self.__remainingMoves = moves
+        self._robot = robot
+        self.robomover = RobotMovement(robot)
+        self._health = health
+        self._maxHealth = health
+        self._atkMin = atkMin
+        self._atkMax = atkMax
+        self._remainingMoves = moves
 
-        self.__posX = -1
-        self.__posY = -1
+        self._posX = -1
+        self._posY = -1
 
-        self.__lastDirection = Direction.NORTH
+        self._lastDirection = Direction.NORTH
 
-        self.__hasKey = False
-        self.__won = False
+        self._hasKey = False
+        self._won = False
 
-        self.__explored: list[MapCell] = []
+        self._explored: list[MapCell] = []
 
     def applyDamage(self, damage):
-        self.__health -= damage
-        if (self.__health < 0):
-            self.__health = 0
+        self._health -= damage
+        if (self._health < 0):
+            self._health = 0
 
     def isAlive(self):
-        return self.__health > 0
+        return self._health > 0
 
     def hasFoundKey(self):
-        return self.__hasKey
+        return self._hasKey
 
     def win(self):
-        self.__won = True
+        self._won = True
 
     def hasWon(self):
-        return self.__won
+        return self._won
 
     def getHealth(self):
-        return self.__health
+        return self._health
 
     def generateAttack(self):
-        return random.randint(self.__atkMin, self.__atkMax)
+        return random.randint(self._atkMin, self._atkMax)
 
     def getLastDirection(self):
-        return self.__lastDirection
+        return self._lastDirection
 
     def getRemainingMoves(self):
-        return self.__remainingMoves
+        return self._remainingMoves
 
     def spawnPlayer(self, x, y, map):
         from Map import Map
-        if (self.__posX == -1 and self.__posY == -1):
-            self.__posX = x
-            self.__posY = y
-            self.__map: Map = map
-            self.__explored = []
-            self.__explored.append(self.__map.getCell(x, y))
+        if (self._posX == -1 and self._posY == -1):
+            self._posX = x
+            self._posY = y
+            self._map: Map = map
+            self._explored = []
+            self._explored.append(self._map.getCell(x, y))
 
     def getRobot(self):
-        return self.__robot
+        return self._robot
 
     def move(self, dir: Direction):
         from MapCell import MapCell
-        cell: MapCell = self.__map.getCell(self.__posX, self.__posY)
+        cell: MapCell = self._map.getCell(self._posX, self._posY)
         neighbor = cell.getNeighbor(dir)
         if (neighbor != None):
 
@@ -80,11 +82,11 @@ class Player:
             elif (dir == Direction.WEST):
                 toRotate = 270
 
-            if (self.__lastDirection == Direction.EAST):
+            if (self._lastDirection == Direction.EAST):
                 toRotate -= 90
-            elif (self.__lastDirection == Direction.SOUTH):
+            elif (self._lastDirection == Direction.SOUTH):
                 toRotate -= 180
-            elif (self.__lastDirection == Direction.WEST):
+            elif (self._lastDirection == Direction.WEST):
                 toRotate -= 270
 
             if (abs(360 + toRotate) < abs(toRotate)):
@@ -92,50 +94,54 @@ class Player:
             elif (abs(-360 + toRotate) < abs(toRotate)):
                 toRotate = -360 + toRotate
 
-            # TODO: Rotate robot
-            # TODO: Move robot forward
 
-            self.__posX = neighbor.getX()
-            self.__posY = neighbor.getY()
-            self.__lastDirection = dir
+            # Rotate robot
+            self.robomover.turn(toRotate)
+            time.sleep(0.5)
+            # Move robot forward
+            self.robomover.move(1.5)
 
-            if (neighbor not in self.__explored):
-                self.__explored.append(neighbor)
+            self._posX = neighbor.getX()
+            self._posY = neighbor.getY()
+            self._lastDirection = dir
+
+            if (neighbor not in self._explored):
+                self._explored.append(neighbor)
             neighbor.handleInteraction()
 
             return True
         return False
 
     def setHealth(self, health):
-        self.__health = health
-        if (self.__health > self.__maxHealth):
-            self.__health = self.__maxHealth
-        elif (self.__health < 0):
-            self.__health = 0
+        self._health = health
+        if (self._health > self._maxHealth):
+            self._health = self._maxHealth
+        elif (self._health < 0):
+            self._health = 0
 
     def getMaxHealth(self):
-        return self.__maxHealth
+        return self._maxHealth
 
     def runToCell(self, x: int, y: int):
-        self.__posX = x
-        self.__posY = y
+        self._posX = x
+        self._posY = y
 
-        cell = self.__map.getCell(x, y)
-        if (cell not in self.__explored):
-            self.__explored.append(cell)
+        cell = self._map.getCell(x, y)
+        if (cell not in self._explored):
+            self._explored.append(cell)
 
     def getX(self):
-        return self.__posX
+        return self._posX
 
     def getY(self):
-        return self.__posY
+        return self._posY
 
     def drawExplored(self):
         from MapCells import MapCells
-        canvas = self.__map.getCanvas()
+        canvas = self._map.getCanvas()
         canvas.delete("all")
 
-        for exploredCell in self.__explored:
+        for exploredCell in self._explored:
 
             cellX = exploredCell.getX()
             cellY = exploredCell.getY()
@@ -167,13 +173,13 @@ class Player:
                 canvas.create_rectangle(
                     cellX * 50, cellY * 50 + 20, cellX * 50 + 10, cellY * 50 + 30, fill=color)
 
-        canvas.create_oval(self.__posX * 50 + 15, self.__posY * 50 +
-                           15, self.__posX * 50 + 35, self.__posY * 50 + 35, fill="lime")
+        canvas.create_oval(self._posX * 50 + 15, self._posY * 50 +
+                           15, self._posX * 50 + 35, self._posY * 50 + 35, fill="lime")
 
         canvas.create_text(
             10,
-            self.__map.getSize() * 50 + 10,
-            text=("Player HP: " + str(self.__health)),
+            self._map.getSize() * 50 + 10,
+            text=("Player HP: " + str(self._health)),
             font=("Helvetica", "20", "bold"),
             anchor=NW
         )

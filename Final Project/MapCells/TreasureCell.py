@@ -6,7 +6,10 @@ class TreasureCell(MapCell):
         super().__init__(map, x, y)
 
     def handleInteraction(self):
-        if (self._map.getPlayer().hasFoundKey()):
+        map = self._map
+        player = map._player
+
+        if (player._hasKey):
             sayText("You Win!")
             self._completed = True
             self._map.getPlayer().win()

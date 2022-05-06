@@ -74,7 +74,7 @@ def intpTable(key,table):
 	for e in table:
 		if key <= e[0]:
 			p = (key-initial[0])/(e[0]-initial[0])
-			# print(p, e, initial, preinit,sub(e,initial),mult(p,sub(e,initial)))
+			print(p, e, initial, preinit,sub(e,initial),mult(p,sub(e,initial)))
 			return add(initial,mult(p,sub(e,initial)))
 		preinit = initial
 		initial = e
@@ -90,8 +90,8 @@ def getTimeToTravelFeet(speedF,feet):
 	slow = intpTable(speedF,feet_map["slowdown"])
 	speed = intpTable(speedF,feet_map["speedup"])
 	full = intpTable(speedF,feet_map["fullspeed"])
-	# print("Interpolated Tables:")
-	# print(slow,speed,full)
+	print("Interpolated Tables:")
+	print(slow,speed,full)
 
 
 	time = 0
@@ -116,9 +116,9 @@ def getTimeToTurnAngle(angle):
 	if abs(angle) == 45:
 		time = 600
 	if abs(angle) == 90:
-		time = 1200
+		time = 1100
 	if abs(angle) == 180:
-		time = 1700
+		time = 1800
 	if abs(angle) == 270:
 		time = 2300
 	if abs(angle) == 360:
@@ -164,14 +164,8 @@ servoRanges = {
 	},
 	SERVO_L_ARM_PTICH:{
 		"type":POSITIONAL,
-		"min":4000,
-		"max":7800,
-		"center":6000
-	},
-	SERVO_L_ARM_YAW:{
-		"type":POSITIONAL,
-		"min":4200,
-		"max":8000,
+		"min":4500,
+		"max":7500,
 		"center":6000
 	},
 	SERVO_R_ARM_PITCH:{
@@ -186,13 +180,6 @@ servoRanges = {
 		"max":7500+1600,
 		"center":6000,
 		"inv":True
-	},
-	SERVO_L_ELBOW_PITCH:{
-		"type":POSITIONAL,
-		"min":6000-2000,
-		"max":7500+2000,
-		"center":6000,
-		"inv":False
 	}
 }
 
@@ -297,13 +284,13 @@ class TangoBot:
 		val = ranges["center"]+ float*domain
 		val = int(max(min(val,ranges["max"]),ranges["min"]))
 		self.target[channel] = val
-		# print("Target value for channel %d is %d with range %f" % (channel,val,float))
+		print("Target value for channel %d is %d with range %f" % (channel,val,float))
 
 	def resetValue(self,channel):
 		ranges = servoRanges[channel]
 		val = ranges["center"]
 		self.target[channel] = val
-		# print("Target value for channel %d is %d with range 0" % (channel,val))
+		print("Target value for channel %d is %d with range 0" % (channel,val))
 
 
 	def incValue(self,channel,float):
@@ -329,7 +316,7 @@ class TangoBot:
 						dec = min(current-target,ranges["acc"])
 						self.ctl.increment(channel,-dec)
 				else:
-					# print(self.target[channel])
+					print(self.target[channel])
 					self.ctl.set(channel,self.target[channel])
 				
 
@@ -338,7 +325,7 @@ class ServoCTL:
 	ctl = maestro.Controller()
 	
 	def __init__(self):
-		self.servos = [SERVO_ZERO for x in range(NUM_SERVOS)]
+		self.servos = [SERVO_ZERO for _ in range(NUM_SERVOS)]
 		self.wheelMax = 6000
 		self.wheelAcc = 0
 
@@ -348,6 +335,9 @@ class ServoCTL:
 	def set(self,channel,value):
 		self.servos[channel] = value
 		self.ctl.setTarget(channel, value)
+
+	def get(self,channel):
+		return self.servos[channel]
 	
 	def increment(self, channel, amount):
 		self.servos[channel] += amount
@@ -367,7 +357,7 @@ class ServoCTL:
 			self.servos[SERVO_THROTTLE] -= deltaThrottle
 			self.ctl.setTarget(SERVO_STEERING, self.servos[SERVO_STEERING] + deltaSteering)
 			self.servos[SERVO_STEERING] -= deltaSteering
-			# print(self.servos[SERVO_THROTTLE], self.servos[SERVO_STEERING])
+			print(self.servos[SERVO_THROTTLE], self.servos[SERVO_STEERING])
 			time.sleep(0.05)
 			
 		self.ctl.setTarget(SERVO_THROTTLE, self.SERVO_ZERO)
